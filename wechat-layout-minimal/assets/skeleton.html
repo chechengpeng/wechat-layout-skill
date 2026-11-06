@@ -1,0 +1,231 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<style>
+  /* ===== 页面骨架（仅预览用；正文是纯行内样式，复制时不经过这里） ===== */
+  :root{
+    --ground:#EBE6DC;
+    --chrome-ink:#2C2925;
+    --chrome-muted:#8B8478;
+    --bar-line:#D9D2C2;
+    --sheet:#FFFFFF;          /* 纸面固定为白：它预览的是公众号里的最终样子 */
+    --sheet-line:#E5DECF;
+    --sheet-muted:#827A6D;    /* 纸面内的次级文字不随主题变（纸面不换主题） */
+    --accent:#3A3631;         /* 极简版预览页 accent 用墨色，不用常规版的砖红 */
+    --accent-hover:#2F2B27;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#17150F;
+      --chrome-ink:#EDE8DE;
+      --chrome-muted:#9A9282;
+      --bar-line:#2C281F;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#17150F;
+    --chrome-ink:#EDE8DE;
+    --chrome-muted:#9A9282;
+    --bar-line:#2C281F;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ground);
+    color:var(--chrome-ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ===== 顶栏 ===== */
+  .topbar{
+    position:sticky;top:0;z-index:10;
+    background:var(--ground);
+    border-bottom:1px solid var(--bar-line);
+  }
+  .topbar-inner{
+    max-width:760px;margin:0 auto;
+    padding:13px 20px;
+    display:flex;align-items:center;flex-wrap:wrap;gap:12px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;min-width:0;}
+  .brand-seal{
+    width:27px;height:27px;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    border:2px solid var(--accent);border-radius:3px;
+    color:var(--accent);
+    font-weight:700;font-size:15px;
+  }
+  .brand-name{font-size:14px;font-weight:700;letter-spacing:1px;white-space:nowrap;}
+  .brand-account{font-size:12px;color:var(--chrome-muted);letter-spacing:1px;white-space:nowrap;}
+  .meta{
+    margin-left:auto;
+    font-size:12.5px;color:var(--chrome-muted);letter-spacing:.5px;
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .btn{
+    appearance:none;border:0;cursor:pointer;
+    background:var(--accent);color:#fff;
+    font-family:inherit;font-size:13.5px;font-weight:700;letter-spacing:2px;
+    padding:9px 18px;border-radius:4px;
+    transition:background .15s ease;
+  }
+  .btn:hover{background:var(--accent-hover);}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .hint{width:100%;font-size:12px;color:var(--chrome-muted);letter-spacing:.5px;}
+
+  /* ===== 纸面 ===== */
+  main{padding:36px 20px 96px;}
+  .sheet{
+    max-width:640px;margin:0 auto;
+    background:var(--sheet);
+    border:1px solid var(--sheet-line);
+    border-radius:6px;
+    box-shadow:0 1px 2px rgba(60,50,35,.06),0 14px 44px rgba(60,50,35,.10);
+    padding:52px 46px 54px;
+  }
+  .doc-eyebrow{
+    margin:0 0 10px;
+    font-size:11.5px;letter-spacing:2.5px;color:var(--sheet-muted);
+  }
+  .doc-title{
+    margin:0;
+    font-size:27px;font-weight:700;line-height:1.5;letter-spacing:1px;
+    color:#2F2B27;
+    text-wrap:balance;
+  }
+  .doc-rule{border:0;border-top:1px solid #E7DFD2;margin:28px 0 36px;}
+  #wx-article{cursor:text;}
+  .footnote{
+    max-width:640px;margin:20px auto 0;
+    font-size:12.5px;line-height:1.8;letter-spacing:.5px;
+    color:var(--chrome-muted);
+  }
+
+  /* ===== 占位符（仅预览用：class 粘贴进编辑器时被丢弃，只剩灰色文字行） ===== */
+  .fx-slot p{
+    display:inline-block;
+    padding:7px 16px;
+    border:1px dashed #CDC3AE;
+    border-radius:3px;
+    background:#FBF9F3;
+  }
+
+  /* ===== 提示条 ===== */
+  .toast{
+    position:fixed;left:50%;bottom:28px;z-index:20;
+    transform:translateX(-50%) translateY(8px);
+    background:#2F2B27;color:#fff;
+    padding:9px 18px;border-radius:4px;
+    font-size:13px;letter-spacing:1px;
+    opacity:0;pointer-events:none;
+    transition:opacity .25s ease,transform .25s ease;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:560px){
+    .sheet{padding:38px 22px 42px;}
+    .doc-title{font-size:23px;}
+    .hint{display:none;}
+    .meta{margin-left:0;order:3;width:100%;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .btn,.toast{transition:none;}
+  }
+</style>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-seal" aria-hidden="true">简</span>
+      <span class="brand-name">公众号极简排版预览</span>
+      <span class="brand-account">· {{ACCOUNT_NAME}}</span>
+    </div>
+    <span class="meta"><span id="stat-chars">—</span> 字 · 约 <span id="stat-time">—</span> 分钟</span>
+    <button class="btn" id="copy-btn" type="button">复制全文</button>
+    <p class="hint">复制后粘贴进公众号后台编辑器，样式随行内样式保留</p>
+  </div>
+</header>
+
+<main>
+  <div class="sheet">
+    <p class="doc-eyebrow">标题 · 填入公众号标题栏（不随正文复制）</p>
+    <h1 class="doc-title">{{TITLE}}</h1>
+    <hr class="doc-rule">
+    <!--WX-ARTICLE-START-->
+{{ARTICLE}}
+    <!--WX-ARTICLE-END-->
+  </div>
+  <p class="footnote">正文全部为行内样式（无 style 标签），粘贴进公众号编辑器可保留排版。本版为极简样式：全文系统黑体、零红色、无卡片与章节装饰，适合短小纯文本散文。若浏览器拦截复制：点一下正文任意位置即可全选正文，再按 Ctrl+C。标题需单独填入标题栏。顶部的字数与阅读时长由页面自动计算写入，随复制一起带进公众号；粘贴后若再改正文，记得手动改这行数字（或删掉整行）。结尾两个虚线占位行：粘贴后在编辑器里对应位置插入公众号名片和往期推荐，插好后删掉占位行。</p>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  const article = document.getElementById('wx-article');
+  const toastEl = document.getElementById('toast');
+  let toastTimer = null;
+
+  // 字数与阅读时长（顶栏 + 顶部字数行两处；字数行随复制带进公众号）
+  // 固定家具（引导行/字数行/结尾品牌区/占位行）带 data-fx，不计入正文字数
+  let fxChars = 0;
+  article.querySelectorAll('[data-fx]').forEach(function (el) {
+    fxChars += el.innerText.replace(/\s+/g, '').length;
+  });
+  const chars = article.innerText.replace(/\s+/g, '').length - fxChars;
+  const minutes = Math.max(1, Math.round(chars / 350));
+  document.getElementById('stat-chars').textContent = chars.toLocaleString();
+  document.getElementById('stat-time').textContent = minutes;
+  const wxStatChars = document.getElementById('wx-stat-chars');
+  const wxStatTime = document.getElementById('wx-stat-time');
+  if (wxStatChars) wxStatChars.textContent = chars;
+  if (wxStatTime) wxStatTime.textContent = minutes;
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
+  }
+
+  function selectArticle(){
+    const range = document.createRange();
+    range.selectNodeContents(article);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  document.getElementById('copy-btn').addEventListener('click', async () => {
+    const plain = article.innerText;
+    const rich = article.innerHTML;
+    try {
+      if (navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/html': new Blob([rich], { type: 'text/html' }),
+          'text/plain': new Blob([plain], { type: 'text/plain' })
+        })]);
+        toast('已复制全文，去公众号编辑器粘贴即可');
+        return;
+      }
+      throw new Error('no-clipboard-api');
+    } catch (err) {
+      try {
+        selectArticle();
+        const ok = document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+        toast(ok ? '已复制全文（兼容模式）' : '复制被浏览器拦截：请手动全选正文后 Ctrl+C');
+      } catch (e2) {
+        toast('复制被浏览器拦截：请手动全选正文后 Ctrl+C');
+      }
+    }
+  });
+
+  // 点正文任意处 = 全选正文（手动复制的兜底路径）
+  article.addEventListener('click', () => {
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed) return; // 正在手动划选，不打扰
+    selectArticle();
+    toast('已全选正文，Ctrl+C 即可复制');
+  });
+</script>
